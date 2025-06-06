@@ -6,6 +6,7 @@ from mesa.visualization.UserParam import UserSettableParameter
 from model import ParkingModel
 from agents import DriverAgent, ParkingSpotAgent, CoordinatorAgent, PoliceAgent
 
+# Custom HTML legend element to display agent color meanings and symbols
 class LegendText(TextElement):
     def render(self, model):
         return (
@@ -34,6 +35,7 @@ class LegendText(TextElement):
             "</div>"
         )
 
+# Determines how agents are displayed on the grid
 def agent_portrayal(agent):
     portrayal = {"Shape": "circle", "Filled": True, "r": 0.8}
 
@@ -45,7 +47,7 @@ def agent_portrayal(agent):
         else:
             portrayal["Color"] = "blue"
         portrayal["Layer"] = 2
-        portrayal["text"] = f"D({agent.fine})"
+        portrayal["text"] = f"D({agent.fine})" # Shows number of fines
         portrayal["text_color"] = "white"
 
     elif isinstance(agent, ParkingSpotAgent):
@@ -71,19 +73,22 @@ def agent_portrayal(agent):
 
     return portrayal
 
+# Line chart showing real-time simulation statistics
 chart = ChartModule([
     {"Label": "Parked", "Color": "green"},
     {"Label": "Active", "Color": "blue"},
     {"Label": "Waiting", "Color": "orange"},
 ], data_collector_name='datacollector')
 
+# Grid display configuration (10x10 grid, 500x500 pixel display)
 grid = CanvasGrid(agent_portrayal, 10, 10, 500, 500)
 legend = LegendText()
 
+# Create the modular Mesa server with visualization modules
 server = ModularServer(
     ParkingModel,
-    [legend, grid, chart],
-    "Smart Parking Simulation",
+    [legend, grid, chart], # Elements to display
+    "Smart Parking Simulation",  # Simulation title
     {
         "num_drivers": UserSettableParameter("slider", "Number of Drivers", 5, 1, 20, 1),
         "num_parking_spots": UserSettableParameter("slider", "Number of Parking Spots", 3, 1, 10, 1),

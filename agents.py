@@ -1,6 +1,7 @@
 from mesa import Agent
 import math
 
+# Represents a driver agent who searches for a parking spot
 class DriverAgent(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -11,10 +12,12 @@ class DriverAgent(Agent):
         self.blocked = False
         self.wait_steps = 0
 
+    # Defines the behavior of the driver at each simulation step
     def step(self):
         if self.parked:
             return
 
+        # Handle blocked state
         if self.blocked:
             self.wait_steps += 1
             if self.wait_steps >= 5:
@@ -24,6 +27,7 @@ class DriverAgent(Agent):
                 self.destination = None
             return
 
+        # Move towards the destination if set
         if self.destination:
             x, y = self.pos
             dx = self.destination[0] - x
@@ -33,6 +37,7 @@ class DriverAgent(Agent):
             new_pos = (move_x, move_y)
             self.model.grid.move_agent(self, new_pos)
 
+            # Attempt to park if arrived at destination
             if new_pos == self.destination:
                 cell = self.model.grid.get_cell_list_contents([new_pos])
                 for agent in cell:
@@ -44,21 +49,24 @@ class DriverAgent(Agent):
         else:
             self.blocked_steps += 1
 
+        # Become blocked and relocate randomly if stuck too long
         if self.blocked_steps > 10:
             self.destination = None
             self.blocked = True
             new_pos = self.random.choice(list(self.model.grid.empties))
             self.model.grid.move_agent(self, new_pos)
 
+# Represents a parking spot with limited capacity
 class ParkingSpotAgent(Agent):
     def __init__(self, unique_id, model, capacity=3):
         super().__init__(unique_id, model)
         self.capacity = capacity
-        self.available_spots = capacity
+        self.available_spots = capacity  # Current number of available spaces
 
     def step(self):
         pass
 
+# Assigns drivers to the nearest available parking spot
 class CoordinatorAgent(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -76,6 +84,7 @@ class CoordinatorAgent(Agent):
                             best_spot = parking.pos
                 agent.destination = best_spot
 
+# Verifies whether parked drivers are in valid parking spots and issues fines otherwise
 class PoliceAgent(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
